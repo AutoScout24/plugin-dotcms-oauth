@@ -71,7 +71,7 @@ public class OAuth2Servlet extends HttpServlet {
 		String path = request.getRequestURI();
 		User user = null;
 
-		String CALLBACK_HOST, API_KEY, API_SECRET, OAUTH_PROVIDER, PROTECTED_RESOURCE_URL, SCOPE, FIRST_NAME_PROP, LAST_NAME_PROP;
+		String CALLBACK_HOST, API_KEY, API_SECRET, OAUTH_PROVIDER, PROTECTED_RESOURCE_URL, SCOPE, FIRST_NAME_PROP, LAST_NAME_PROP, OAUTH_HOSTNAME;
 		
 		CALLBACK_HOST = request.getScheme() + "://" + ((request.getServerPort() == 80 || request.getServerPort() == 443) ? 
 						request.getServerName() : request.getServerName()+":"+request.getServerPort());
@@ -88,8 +88,7 @@ public class OAuth2Servlet extends HttpServlet {
 		String proName;
 		Api provider;
 		try {
-			provider = (Api) Class.forName(OAUTH_PROVIDER).newInstance();
-			proName = provider.getClass().getSimpleName();
+			proName = "Auth02Api";
 
 			API_KEY = OAuthPropertyBundle.getProperty(proName + "_" + "API_KEY");
 			API_SECRET = OAuthPropertyBundle.getProperty(proName + "_" + "API_SECRET");
@@ -97,6 +96,9 @@ public class OAuth2Servlet extends HttpServlet {
 			SCOPE = OAuthPropertyBundle.getProperty(proName + "_" + "SCOPE");
 			FIRST_NAME_PROP = OAuthPropertyBundle.getProperty(proName + "_" + "FIRST_NAME_PROP");
 			LAST_NAME_PROP = OAuthPropertyBundle.getProperty(proName + "_" + "LAST_NAME_PROP");
+			OAUTH_HOSTNAME = OAuthPropertyBundle.getProperty(proName + "_" + "HOSTNAME");
+
+			provider = new com.autoscout24.dotcms.authentication.api.Auth02Api(OAUTH_HOSTNAME);
 		} catch (Exception e1) {
 			throw new ServletException(e1);
 		}
@@ -154,8 +156,6 @@ public class OAuth2Servlet extends HttpServlet {
 		} else {
 			// Send for authorization
 			sendForAuthorization(request, response, service);
-
-
 		}
 
 	}

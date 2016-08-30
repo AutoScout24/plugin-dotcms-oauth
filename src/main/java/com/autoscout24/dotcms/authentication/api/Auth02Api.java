@@ -11,19 +11,22 @@ import org.scribe.utils.Preconditions;
 
 public class Auth02Api extends DefaultApi20 {
 
-    private String serviceUrl() {
-        return "https://jostick.eu.auth0.com";
+    private final String hostname;
+
+    public Auth02Api(String hostname)
+    {
+        this.hostname = hostname;
     }
 
     // TODO: Change connection parameter to Azure AD
     private String authorizationUrl() {
-        return serviceUrl() +  "/authorize?client_id=%s&response_type=code&redirect_uri=%s&state=%s&connection=google-oauth2&scope=%s";
+        return "https://" + this.hostname +  "/authorize?client_id=%s&response_type=code&redirect_uri=%s&state=%s&connection=google-oauth2&scope=%s";
     }
 
     @Override
     public String getAccessTokenEndpoint()
     {
-        return serviceUrl() + "/oauth/token";
+        return "https://" + this.hostname + "/oauth/token";
     }
 
     @Override
