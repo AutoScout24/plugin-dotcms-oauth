@@ -4,7 +4,7 @@ import static com.dotcms.repackage.org.junit.Assert.*;
 
 import com.dotcms.repackage.org.junit.*;
 
-import javax.xml.bind.DatatypeConverter;
+import com.dotcms.repackage.javax.xml.bind.DatatypeConverter;
 import java.security.*;
 import java.security.spec.*;
 

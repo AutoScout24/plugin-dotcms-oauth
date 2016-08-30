@@ -1,6 +1,6 @@
 package org.scribe.services;
 
-import javax.xml.bind.*;
+import com.dotcms.repackage.javax.xml.bind.DatatypeConverter;
 
 public class DatatypeConverterEncoder extends Base64Encoder
 {
