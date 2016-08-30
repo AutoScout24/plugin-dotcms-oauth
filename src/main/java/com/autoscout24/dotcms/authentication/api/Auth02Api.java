@@ -1,5 +1,6 @@
-package org.scribe.builder.api;
+package com.autoscout24.dotcms.authentication.api;
 
+import org.scribe.builder.api.DefaultApi20;
 import org.scribe.extractors.AccessTokenExtractor;
 import org.scribe.extractors.JsonTokenExtractor;
 import org.scribe.model.*;

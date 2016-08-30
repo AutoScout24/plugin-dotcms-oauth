@@ -1,7 +1,7 @@
-package org.scribe.examples;
+package com.autoscout24.dotcms.authentication.cli;
 
+import com.autoscout24.dotcms.authentication.api.Auth02Api;
 import org.scribe.builder.ServiceBuilder;
-import org.scribe.builder.api.Auth02Api;
 import org.scribe.model.*;
 import org.scribe.oauth.OAuthService;
 

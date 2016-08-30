@@ -40,7 +40,7 @@ jar {
         instruction 'Bundle-DocURL', 'http://dotcms.com'
         instruction 'Bundle-Activator', 'com.dotcms.osgi.oauth.Activator'
         instruction 'DynamicImport-Package', '*'
-        instruction 'Import-Package', 'org.scribe.builder.api.*;version=0,org.scribe.builder.*;version=0,!org.apache.commons.codec.binary.*,*;version=0'
+        instruction 'Import-Package', 'org.scribe.builder.api.*;version=0,org.scribe.builder.*;version=0,com.autoscout24.dotcms.authentication.builder.api.*;version=0,com.autoscout24.dotcms.authentication.builder.*;version=0,!org.apache.commons.codec.binary.*,*;version=0'
     }
 }
 
