@@ -2,7 +2,7 @@ apply plugin: 'osgi'
 apply plugin: 'eclipse'
 apply plugin: 'propdeps'
 apply plugin: 'propdeps-maven'
-apply plugin: 'propdeps-eclipse'
+apply plugin: 'propdeps-idea'
 
 sourceCompatibility = '1.8'
 version = '0.1'
@@ -15,7 +15,9 @@ repositories {
 }
 
 dependencies {
-	compile('com.dotcms:dotcms:3.2+') { transitive = true }
+    compile (group: 'com.dotcms', name: 'dotcms', version: '3.5.1'){
+        transitive = true
+    }
 	provided('javax.servlet:servlet-api:2.5')
 }
 
@@ -44,6 +46,15 @@ jar {
     }
 }
 
+processResources {
+    filesMatching("**/oauth2.properties") {
+        expand([
+                AUTH0_API_KEY: auth0ApiKey,
+                AUTH0_API_SECRET: auth0ApiSecret
+        ])
+    }
+}
+
 task removeVersionsOnManifest (dependsOn: ['jar']) << {
 	def manifest1=new java.util.jar.Manifest(new FileInputStream('build/tmp/jar/MANIFEST.MF'))
 	def imports = manifest1.getMainAttributes().find { it.key.toString()=="Import-Package" }
@@ -52,14 +63,19 @@ task removeVersionsOnManifest (dependsOn: ['jar']) << {
 }
 
 
-task osgijar(type: Jar, dependsOn: ['removeVersionsOnManifest'] ) { 
-    appendix = "generatedjar" 
+task osgijar(type: Jar, dependsOn: ['removeVersionsOnManifest'] ) {
+    appendix = "release"
     from zipTree(jar.archivePath) // add original content 
     manifest {
     	from('build/tmp/jar/MANIFEST_NOVERSIONS.MF')
     } 
-} 
+}
+
+task release(dependsOn: ['osgijar']) << {
+    def originalJar = file(jar.archivePath)
+    originalJar.delete()
+}
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.8'
+    gradleVersion = '2.9'
 }

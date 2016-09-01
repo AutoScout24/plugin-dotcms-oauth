@@ -5,6 +5,7 @@ import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.*;
 import org.scribe.oauth.OAuthService;
 
+import java.util.Random;
 import java.util.Scanner;
 
 public class Auth02Example
@@ -15,8 +16,8 @@ public class Auth02Example
   public static void main(String[] args)
   {
     // Replace these with your own api key and secret
-    String apiKey = "";
-    String apiSecret = "";
+    String apiKey = System.getProperty("api.key");
+    String apiSecret = System.getProperty("api.secret");
     OAuthService service = new ServiceBuilder()
                                   .provider(Auth02Api.class)
                                   .apiKey(apiKey)
@@ -24,6 +25,8 @@ public class Auth02Example
                                   .scope("openid email given_name family_name roles")
                                   .callback("http://localhost:8080/app/oauth2/callback")
                                   .build();
+    String state = "secret" + new Random().nextInt(999_999);
+    ((Auth02Api)service.getApi()).configure("jostick.eu.auth0.com", "google-oauth2", state);
     Scanner in = new Scanner(System.in);
 
     System.out.println("=== Auth02's OAuth Workflow ===");
@@ -39,7 +42,19 @@ public class Auth02Example
     System.out.print(">>");
     Verifier verifier = new Verifier(in.nextLine());
     System.out.println();
-    
+
+    System.out.println("And paste the state from server here. We have set 'secretState'='" + state + "'.");
+    System.out.print(">>");
+    final String value = in.nextLine();
+    if (state.equals(value)) {
+      System.out.println("State value does match!");
+    } else {
+      System.out.println("Ooops, state value does not match!");
+      System.out.println("Expected = " + state);
+      System.out.println("Got      = " + value);
+      System.out.println();
+    }
+
     // Trade the Request Token and Verfier for the Access Token
     System.out.println("Trading the Request Token for an Access Token...");
     Token accessToken = service.getAccessToken(EMPTY_TOKEN, verifier);

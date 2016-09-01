@@ -18,7 +18,7 @@ public class Request
   private static final String CONTENT_LENGTH = "Content-Length";
   private static final String CONTENT_TYPE = "Content-Type";
   private static RequestTuner NOOP = new RequestTuner() {
-    @Override public void tune(Request _){}
+    @Override public void tune(Request r){}
   };
   public static final String DEFAULT_CONTENT_TYPE = "application/x-www-form-urlencoded";
 
@@ -81,7 +81,6 @@ public class Request
     String completeUrl = getCompleteUrl();
     if (connection == null)
     {
-    	System.out.println("completeUrl:" + completeUrl);
       System.setProperty("http.keepAlive", connectionKeepAlive ? "true" : "false");
       connection = (HttpURLConnection) new URL(completeUrl).openConnection();
       connection.setInstanceFollowRedirects(followRedirects);

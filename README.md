@@ -1,31 +1,42 @@
 plugins-dotcms-oauth
 ====================
 
-This is an osgi plugin that provides an example of single sign-on using OAuth2.  This intended to be a drop in replacement for the standard dotcms login, both for front end users and for backend users and effectivly disables the out of the box authentication.  This plugin is provided as a code example and should not be used in a production environment without careful understanding of what the code does.
+This is an osgi plugin initially copied from DotCMS. It uses Auth0 for authentication. It can be tested by 
+running Auth02Example.
 
-It provides an example Google and a Facebook implementation. 
-* https://developers.google.com/accounts/docs/OAuth2
-* https://developers.facebook.com/docs/facebook-login/v2.1
+We use Auth0 for backend login and native username/password login for frontend.
 
+When a new user logs in with SSO, the user is created in the local database with a random password. We synchronize 
+Azure AD groups with dotCMS roles on each login.
 
+We disabled the native parameter to use the original authentication method. This would defeat the purpose of
+our SSO implementation. When a user changes his own password, he could still use the native form to login although
+he was deleted from Azure AD. By disabling the form, logging in is only possible with SSO.
 
 ## Building
 To download and build,clone the repo, cd into the cloned directoy and run
 ```
-git clone https://github.com/dotCMS/plugin-dotcms-oauth.git
+git clone git@github.com:AutoScout24/plugin-dotcms-oauth.git
 cd ./plugin-dotcms-oauth
-MAKE CONFIG CHANGES
-./gradlew jar
+./gradlew -Pauth0ApiKey=XXX -Pauth0ApiSecret=XXX release
 ```
- the plugin will be built under ./build/lib
+the plugin will be built under ./build/lib/plugin-dotcms-oauth-release-0.1.jar
+
+The API_KEY and API_SECRET can be found in LastPass. 
+
+**WARNING:** Deploying an OSGi bundle without proper configuration can leave you locked out of dotCMS. 
+
+## Deployment
+**WARNING:** The deployment process is ugly and risky, especially since we have no access to the machines. Since we don't think this
+plugin should change very often and it's difficult to make it better, we leave it like this for now. But make sure to read the whole
+documentation and understand the consequences before attempting a deployment.
+
+After the bundle was build, upload it to the server manually in the administration backend. Please check that authentication is still working
+in a second browser before logging out. This is to ensure that authentication is still working. 
+
+If authentication is broken, you can't login to upload a fixed OSGi bundle. You will need a support ticket to gain access to dotCMS again.
 
 ## Using
-To use this plugin, you will need to have a developer account with the providers (Google, Facebook) and a application registered with the providers.  In each application, make sure you: 
-* Authorize the application scopes required by the plugin
-* Authorize the Callback host to receive the callback.
-* Copy the application API key and API secret and set them in the oauth.properties file.
-
-See the oauth.properties for the required scopes.
 
 This plugin "rewrites" the urls Dotcms uses to login (both front and backend) and points them to the OAuth provider specified.  You can see and or add/delete/modify these "rewrites" in the Activator class here.  
 

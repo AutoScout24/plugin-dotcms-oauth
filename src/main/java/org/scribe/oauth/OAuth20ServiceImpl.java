@@ -73,4 +73,7 @@ public class OAuth20ServiceImpl implements OAuthService
     return api.getAuthorizationUrl(config);
   }
 
+  public Api getApi() {
+    return api;
+  }
 }

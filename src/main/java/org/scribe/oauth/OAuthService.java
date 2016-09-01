@@ -1,5 +1,6 @@
 package org.scribe.oauth;
 
+import org.scribe.builder.api.Api;
 import org.scribe.model.*;
 
 /**
@@ -50,4 +51,6 @@ public interface OAuthService
    * @return the URL where you should redirect your users
    */
   public String getAuthorizationUrl(Token requestToken);
+
+  public Api getApi();
 }

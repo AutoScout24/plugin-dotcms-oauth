@@ -11,16 +11,24 @@ import org.scribe.utils.Preconditions;
 
 public class Auth02Api extends DefaultApi20 {
 
-    private final String hostname;
+    private String hostname;
+    private String connection;
+    private String state;
 
-    public Auth02Api(String hostname)
+    /**
+     * Adds Auth0 specific configuration.
+     *
+     * Has to be called before the API is used.
+     */
+    public void configure(String hostname, String connection, String state)
     {
         this.hostname = hostname;
+        this.connection = connection;
+        this.state = state;
     }
 
-    // TODO: Change connection parameter to Azure AD
     private String authorizationUrl() {
-        return "https://" + this.hostname +  "/authorize?client_id=%s&response_type=code&redirect_uri=%s&state=%s&connection=google-oauth2&scope=%s";
+        return "https://%s/authorize?client_id=%s&response_type=code&redirect_uri=%s&state=%s&connection=%s&scope=%s";
     }
 
     @Override
@@ -33,9 +41,7 @@ public class Auth02Api extends DefaultApi20 {
     public String getAuthorizationUrl(OAuthConfig config)
     {
         Preconditions.checkValidUrl(config.getCallback(), "Must provide a valid url as callback.");
-        // TODO: Do we need the state parameter. According to the Auth0 documentation (https://auth0.com/docs/protocols),
-        // it is necessary to avoid CSRF attacks. However, no other API implementation in dotCMS is using it.
-        return String.format(authorizationUrl(), config.getApiKey(), OAuthEncoder.encode(config.getCallback()), "TODO", OAuthEncoder.encode(config.getScope()));
+        return String.format(authorizationUrl(), this.hostname, config.getApiKey(), OAuthEncoder.encode(config.getCallback()), this.state, this.connection, OAuthEncoder.encode(config.getScope()));
     }
 
     @Override
@@ -62,7 +68,7 @@ public class Auth02Api extends DefaultApi20 {
         private DefaultApi20 api;
         private OAuthConfig config;
 
-        public Auth0Api2Service(DefaultApi20 api, OAuthConfig config) {
+        Auth0Api2Service(DefaultApi20 api, OAuthConfig config) {
             super(api, config);
             this.api = api;
             this.config = config;

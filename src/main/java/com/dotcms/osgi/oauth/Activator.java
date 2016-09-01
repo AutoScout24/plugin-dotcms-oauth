@@ -7,6 +7,7 @@ import java.util.List;
 import com.dotcms.osgi.oauth.util.OAuthPropertyBundle;
 import com.dotcms.osgi.oauth.viewtool.OAuthToolInfo;
 import com.dotcms.repackage.org.apache.felix.http.api.ExtHttpService;
+import com.dotcms.repackage.org.apache.logging.log4j.core.LoggerContext;
 import com.dotcms.repackage.org.osgi.framework.BundleContext;
 import com.dotcms.repackage.org.osgi.framework.ServiceReference;
 import com.dotcms.repackage.org.osgi.util.tracker.ServiceTracker;
@@ -14,10 +15,10 @@ import com.dotcms.repackage.org.tuckey.web.filters.urlrewrite.Condition;
 import com.dotcms.repackage.org.tuckey.web.filters.urlrewrite.NormalRule;
 import com.dotcms.repackage.org.tuckey.web.filters.urlrewrite.Rule;
 import com.dotmarketing.filters.DotUrlRewriteFilter;
+import com.dotmarketing.loggers.Log4jUtil;
 import com.dotmarketing.osgi.GenericBundleActivator;
+import com.dotcms.repackage.org.apache.logging.log4j.LogManager;
 import com.dotmarketing.util.Logger;
-
-
 
 public class Activator extends GenericBundleActivator {
 
@@ -26,10 +27,20 @@ public class Activator extends GenericBundleActivator {
 	private ServiceTracker<ExtHttpService, ExtHttpService> serviceTracker;
 	private OAuth2Servlet servlet;
 	private final String OAUTH_URL = "/oauth2";
+    private LoggerContext pluginLoggerContext;
 
 	@SuppressWarnings("unchecked")
 	public void start(BundleContext context) throws Exception {
-		Logger.info(this.getClass(), "Starting OSGi OAuth Filter");
+        //Initializing log4j...
+        LoggerContext dotcmsLoggerContext = Log4jUtil.getLoggerContext();
+        //Initialing the log4j context of this plugin based on the dotCMS logger context
+        pluginLoggerContext = (LoggerContext) LogManager.getContext(this.getClass().getClassLoader(),
+                false,
+                dotcmsLoggerContext,
+                dotcmsLoggerContext.getConfigLocation()
+        );
+
+		Logger.info(this, "Starting OSGi OAuth Filter");
 		serviceTracker = new ServiceTracker<ExtHttpService, ExtHttpService>(context, OAuth2Servlet.class.getName(), null);
 
 		// Initializing services...
@@ -147,17 +158,21 @@ public class Activator extends GenericBundleActivator {
         if ( httpService != null && servlet != null ) {
             httpService.unregisterServlet( servlet );
         }
-		Logger.info(this.getClass(), "Removing OSGi OAuth Servlet");
-		for(Rule rule : rules){
 
-			
+		Logger.info(this.getClass(), "Removing OSGi OAuth Servlet");
+
+        for(Rule rule : rules) {
 			DotUrlRewriteFilter.getUrlRewriteFilter().removeRule(rule);
 		}
-		unregisterViewToolServices();
+
 		Logger.info(this.getClass(), "We now have " + DotUrlRewriteFilter.getUrlRewriteFilter().getRules().size() + " rules");
 		// close service tracker to stop tracking
 		serviceTracker.close();
 
-	}
+        unregisterServices(context);
+
+        //Shutting down log4j in order to avoid memory leaks
+        Log4jUtil.shutdown(pluginLoggerContext);
+    }
 
 }
