@@ -44,14 +44,34 @@ https://github.com/dotCMS/plugin-dotcms-oauth/blob/master/src/main/java/com/dotc
 
 If you want to avoid using oauth and authenticate via the standard Dotcms authentication, you can pass the url parameter native=true like this:
 
+Backend native login:
 ````
 http://localhost:8080/html/portal/login.jsp?native=true 
 ````
-or 
-````
-http://localhost:8080/dotCMS/login?native=true 
-````
 
+## Known issues
+DotCMS do have their own user accounts needed for system administration and support:
+* Admin2 User (admin2@dotcms.com)
+* dotCMS Support (support@dotcms.com)
+
+Futhermore there are Accounts used by the system
+* default@dotcms.com
+* anonymous user anonymous (anonymous@dotcmsfakeemail.org)
+
+They have to login using the native login. Our user synchronization tool must allow these users to exist although
+they do not exist in Azure AD.
+
+Risks associated with native login:
+* Scout24 users could use native login instead of SSO. Since groups/roles are only synchronized on login with Auth0,
+  a user can maintain permissions that are already removed from Azure AD
+* Any admin could change the password of one of the dotcms accounts and use them when their Azure AD account is cancelled.  
+
+Possible measures:
+* We can update roles regularly from an external script that is also removing old accounts
+* Most actions are logged by DotCMS. While we cannot prevent the second issue from happening easily, it will leave traces
+  and it should be possible to find out who did it in retrospective. 
+* Limit Admin access in general to a low number of people
+* Do not use team account, but individual accounts for every admin.
 
 ## OSGi Exports
 Below is a list of exports that are required by this plugin
