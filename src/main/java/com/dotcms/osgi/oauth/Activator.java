@@ -3,7 +3,9 @@ package com.dotcms.osgi.oauth;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 
+import com.autoscout24.dotcms.authentication.TimerTask;
 import com.dotcms.osgi.oauth.util.OAuthPropertyBundle;
 import com.dotcms.osgi.oauth.viewtool.OAuthToolInfo;
 import com.dotcms.repackage.org.apache.felix.http.api.ExtHttpService;
@@ -28,6 +30,7 @@ public class Activator extends GenericBundleActivator {
 	private OAuth2Servlet servlet;
 	private final String OAUTH_URL = "/oauth2";
     private LoggerContext pluginLoggerContext;
+	private Timer timer;
 
 	@SuppressWarnings("unchecked")
 	public void start(BundleContext context) throws Exception {
@@ -43,11 +46,12 @@ public class Activator extends GenericBundleActivator {
 		Logger.info(this, "Starting OSGi OAuth Filter");
 		serviceTracker = new ServiceTracker<ExtHttpService, ExtHttpService>(context, OAuth2Servlet.class.getName(), null);
 
+        timer = new Timer("oauth-plugin-timer", true);
+        timer.scheduleAtFixedRate(new TimerTask(), 0, TimerTask.PERIOD_IN_MILLISECONDS);
+
 		// Initializing services...
 		initializeServices(context);
 
-		
-		
 		String useFor = OAuthPropertyBundle.getProperty("USE_OAUTH_FOR","").toLowerCase();
 		boolean frontEnd = useFor.contains ("frontend");
 		boolean backEnd = useFor.contains ("backend");
@@ -154,6 +158,8 @@ public class Activator extends GenericBundleActivator {
 	}
 
 	public void stop(BundleContext context) throws Exception {
+	    timer.cancel();
+
         //Unregister the servlet
         if ( httpService != null && servlet != null ) {
             httpService.unregisterServlet( servlet );

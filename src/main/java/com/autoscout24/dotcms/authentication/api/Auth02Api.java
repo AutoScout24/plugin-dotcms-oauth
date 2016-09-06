@@ -18,7 +18,8 @@ public class Auth02Api extends DefaultApi20 {
     /**
      * Adds Auth0 specific configuration.
      *
-     * Has to be called before the API is used.
+     * Has to be called before the API is used. Sidesteps OAuthConfig since Auth0 needs extra configuration that
+     * cannot be set in OAuthConfig.
      */
     public void configure(String hostname, String connection, String state)
     {
@@ -27,17 +28,22 @@ public class Auth02Api extends DefaultApi20 {
         this.state = state;
     }
 
+    /**
+     * @return the authorization URL pattern
+     */
     private String authorizationUrl() {
         return "https://%s/authorize?client_id=%s&response_type=code&redirect_uri=%s&state=%s&connection=%s&scope=%s";
     }
 
     @Override
+    /* {@inheritDoc} */
     public String getAccessTokenEndpoint()
     {
         return "https://" + this.hostname + "/oauth/token";
     }
 
     @Override
+    /* {@inheritDoc} */
     public String getAuthorizationUrl(OAuthConfig config)
     {
         Preconditions.checkValidUrl(config.getCallback(), "Must provide a valid url as callback.");
@@ -45,22 +51,29 @@ public class Auth02Api extends DefaultApi20 {
     }
 
     @Override
+    /* {@inheritDoc} */
     public AccessTokenExtractor getAccessTokenExtractor()
     {
         return new JsonTokenExtractor();
     }
 
     @Override
+    /* {@inheritDoc} */
     public Verb getAccessTokenVerb() {
         return Verb.POST;
     }
 
     @Override
+    /* {@inheritDoc} */
     public OAuthService createService(OAuthConfig config) {
         return new Auth02Api.Auth0Api2Service(this, config);
     }
 
-
+    /**
+     * Implements OAuth service for Auth0.
+     *
+     * In constrast to other services, the access token has to be retrieved using POST request.
+     */
     private class Auth0Api2Service extends OAuth20ServiceImpl {
 
         private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
