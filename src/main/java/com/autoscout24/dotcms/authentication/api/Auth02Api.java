@@ -11,6 +11,8 @@ import org.scribe.utils.Preconditions;
 
 public class Auth02Api extends DefaultApi20 {
 
+    public static final String USER_RESOURCE_URL = "https://scout24.eu.auth0.com/userinfo";
+
     private String hostname;
     private String connection;
     private String state;

@@ -1,13 +1,11 @@
-package com.dotcms.osgi.oauth;
+package com.autoscout24.dotcms.authentication;
 
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 
-import com.autoscout24.dotcms.authentication.TimerTask;
-import com.dotcms.osgi.oauth.util.OAuthPropertyBundle;
-import com.dotcms.osgi.oauth.viewtool.OAuthToolInfo;
+import com.autoscout24.dotcms.authentication.util.OAuthPropertyBundle;
 import com.dotcms.repackage.org.apache.felix.http.api.ExtHttpService;
 import com.dotcms.repackage.org.apache.logging.log4j.core.LoggerContext;
 import com.dotcms.repackage.org.osgi.framework.BundleContext;
@@ -56,10 +54,6 @@ public class Activator extends GenericBundleActivator {
 		boolean frontEnd = useFor.contains ("frontend");
 		boolean backEnd = useFor.contains ("backend");
 
-		registerViewToolService(context, new OAuthToolInfo());
-		
-		
-		
 		ServiceReference<ExtHttpService> sRef = (ServiceReference<ExtHttpService>) context.getServiceReference(ExtHttpService.class.getName());
         if ( sRef != null ) {
 

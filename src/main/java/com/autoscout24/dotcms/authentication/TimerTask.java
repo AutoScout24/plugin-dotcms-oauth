@@ -11,6 +11,7 @@ import com.dotmarketing.util.Logger;
 import com.dotmarketing.util.UUIDGenerator;
 import com.dotmarketing.viewtools.MailerTool;
 import com.liferay.portal.model.User;
+import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PropsUtil;
 
 import java.util.Arrays;
@@ -69,7 +70,7 @@ public class TimerTask extends java.util.TimerTask {
 
                         mailerTool.sendEmail("#AS24-ThatsClassified-ds@scout24.com", CompanyUtils.getDefaultCompany().getEmailAddress(),
                                 "Unauthorized dotCMS account found",
-                                "Found unauthorized account " + u.getEmailAddress() + " on host " + PropsUtil.get(PropsUtil.WEB_SERVER_HOST),
+                                "Found unauthorized account " + u.getEmailAddress() + " on " + PropsUtil.get(CompanyUtils.getDefaultCompany().getPortalURL()),
                                 false
                         );
                     }
@@ -86,12 +87,13 @@ public class TimerTask extends java.util.TimerTask {
     }
 
     private String[] allowedEmailDomains = {
-            "autoscout24.de", "autoscout24.com", "scout24.com", "autoscout24-media.com"
+            "autoscout24.de", "autoscout24.com", "scout24.com", "autoscout24-media.com", "autoscout24.at",
+            "autoscout24.be", "autoscout24.es", "autoscout24.fr", "autoscout24.it", "autoscout24.lu", "autoscout24.nl"
     };
 
     private String[] emailAddressWhiteList = {
-            "admin@dotcms.com", // TODO: Only for the start. Deactivate later. No group accounts.
-            "default@dotcms.com", "admin2@dotcms.com", "support@dotcms.com", "anonymous@dotcmsfakeemail.org"
+            "default@dotcms.com", "admin2@dotcms.com", "support@dotcms.com", "anonymous@dotcmsfakeemail.org",
+            "system@dotcmsfakeemail.org"
     };
 
     private boolean shouldValidationBeSkipped(User user) throws DotDataException {

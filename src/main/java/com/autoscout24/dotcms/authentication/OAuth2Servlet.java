@@ -7,13 +7,11 @@
  * passes it a contact to use to fill its information
  *
  */
-package com.dotcms.osgi.oauth;
+package com.autoscout24.dotcms.authentication;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
-import java.util.Date;
-import java.util.StringTokenizer;
+import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -24,9 +22,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.autoscout24.dotcms.authentication.api.Auth02Api;
+import com.autoscout24.dotcms.authentication.util.UserHelper;
 import com.dotcms.repackage.javax.xml.bind.DatatypeConverter;
 import com.dotcms.repackage.org.apache.commons.httpclient.HttpStatus;
-import com.dotmarketing.exception.DotSecurityException;
 import com.dotmarketing.util.json.JSONException;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
@@ -35,14 +33,12 @@ import org.scribe.model.Verb;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
-import com.dotcms.osgi.oauth.util.OAuthPropertyBundle;
+import com.autoscout24.dotcms.authentication.util.OAuthPropertyBundle;
 import com.dotmarketing.business.APILocator;
-import com.dotmarketing.business.Role;
 import com.dotmarketing.cms.factories.PublicEncryptionFactory;
 import com.dotmarketing.cms.login.factories.LoginFactory;
 import com.dotmarketing.exception.DotDataException;
 import com.dotmarketing.util.Logger;
-import com.dotmarketing.util.UUIDGenerator;
 import com.dotmarketing.util.json.JSONObject;
 import com.dotmarketing.viewtools.JSONTool;
 import com.liferay.portal.auth.PrincipalThreadLocal;
@@ -108,6 +104,15 @@ public class OAuth2Servlet extends HttpServlet {
 
 	}
 
+	/**
+	 * Processes the callback from Auth0.
+	 *
+	 * This is the second step, after the user has authenticated at Auth0. The callback URL contains an access token
+	 * that is used by this function to retrieve the user data. If the user already exists in dotCMS, this user is
+	 * logged in, otherwise a new user is created.
+	 *
+	 * On each login, the user groups are synchronized between Auth0 and dotCMS.
+	 */
     private void processAuth0Callback(HttpServletResponse response, HttpServletRequest request, HttpSession session, String callbackHost, String state, OAuthService service) throws ServletException {
         String stateFromRequest = "";
 
@@ -116,12 +121,13 @@ public class OAuth2Servlet extends HttpServlet {
         }
 
         try {
+        	// Checking the state parameter is important to prevent CSRF attacks
             if(!stateFromRequest.equals(state)) {
                 Logger.info(this.getClass(), "State parameter does not match (" + stateFromRequest + " != " + state + ")!");
                 response.reset();
                 response.sendError(HttpStatus.SC_UNPROCESSABLE_ENTITY, "state parameter does not match (" + stateFromRequest + " != " + state + ")!");
             } else {
-                doCallback(request, response, service, callbackHost);
+                doCallback(request, response, service);
 
                 String authorizationUrl = (String) session.getAttribute("OAUTH_REDIRECT");
                 if (authorizationUrl == null)
@@ -138,6 +144,9 @@ public class OAuth2Servlet extends HttpServlet {
         }
     }
 
+	/**
+	 * Factory method for creating and configuring a Scribe OAuthService.
+	 */
     private OAuthService createOAuthService(String CALLBACK_HOST, String state) throws ServletException {
 		String apiKey, apiSecret, scopes, oauthHostname;
         String auth0Connection;
@@ -189,15 +198,11 @@ public class OAuth2Servlet extends HttpServlet {
 
 	/**
 	 * This method gets the user from the remote service and either creates them
-	 * in Dotcms and/or updates
-	 * 
-	 * @param request
-	 * @param service
-	 * @throws DotDataException
+	 * in Dotcms and/or updates an existing user.
 	 */
-	private void doCallback(HttpServletRequest request, HttpServletResponse response, OAuthService service, String callBackUrl) throws DotDataException {
+	private void doCallback(HttpServletRequest request, HttpServletResponse response, OAuthService service) throws DotDataException, JSONException {
 
-		JSONObject userResourceJson = getUserResourceFromAuth0(service, callBackUrl, request.getParameter("code"));
+		JSONObject userResourceJson = getUserResourceFromAuth0(service, request.getParameter("code"));
 
 		User systemUser = APILocator.getUserAPI().getSystemUser();
 		User userLoggingIn = null;
@@ -209,7 +214,7 @@ public class OAuth2Servlet extends HttpServlet {
 		}
 		if (userLoggingIn == null) {
 			try {
-				userLoggingIn = createUser(userResourceJson, systemUser);
+				userLoggingIn = UserHelper.createUser(userResourceJson);
 			} catch (Exception e) {
 				Logger.warn(this, "Error creating user:" + e.getMessage(), e);
 				throw new DotDataException(e.getMessage());
@@ -217,73 +222,43 @@ public class OAuth2Servlet extends HttpServlet {
 		}
 
 		if (userLoggingIn.isActive()) {
-			updateUserRoles(userLoggingIn);
+			List<String> groups = new ArrayList<String>();
 
-			LoginFactory.doCookieLogin(PublicEncryptionFactory.encryptString(userLoggingIn.getUserId()), request, response);
+			for(int i=0; i < userResourceJson.getJSONArray("groups").size();i++) {
+				groups.add(userResourceJson.getJSONArray("groups").getString(i));
+			}
 
-    		PrincipalThreadLocal.setName(userLoggingIn.getUserId());
-			request.getSession().setAttribute(WebKeys.USER_ID, userLoggingIn.getUserId());
+			// TODO: Change to AS24-AP-DotCMS-Backend-Users or something similar as soon as groups are mapped correctly
+			if(groups.contains("AS24-Azure-ThatsClassified-Team")) {
+				UserHelper.updateUserRoles(userLoggingIn, groups);
+
+				LoginFactory.doCookieLogin(PublicEncryptionFactory.encryptString(userLoggingIn.getUserId()), request, response);
+
+				PrincipalThreadLocal.setName(userLoggingIn.getUserId());
+				request.getSession().setAttribute(WebKeys.USER_ID, userLoggingIn.getUserId());
+			}
 		}
 	}
 
-	private JSONObject getUserResourceFromAuth0(OAuthService service, String callBackUrl, String code) {
+	/**
+	 * @return The user data from Auth0 including name, email, groups and so on.
+	 */
+	private JSONObject getUserResourceFromAuth0(OAuthService service, String code) {
 		Verifier verifier = new Verifier(code);
 
 		Token accessToken = service.getAccessToken(null, verifier);
 		Logger.debug(this.getClass(), "Got the Access Token!");
-
-		OAuthRequest userResourceRequest = new OAuthRequest(Verb.GET, callBackUrl);
+		OAuthRequest userResourceRequest = new OAuthRequest(Verb.GET, Auth02Api.USER_RESOURCE_URL);
 		service.signRequest(accessToken, userResourceRequest);
 
-		return new JSONTool().generate(userResourceRequest.send().getBody());
+		String response = userResourceRequest.send().getBody();
+		return new JSONTool().generate(response);
 	}
 
-	// TODO: Extract roles from groups
-	private void updateUserRoles(User u) throws DotDataException {
-		StringTokenizer st = new StringTokenizer("", ",;");
-		while (st.hasMoreElements()) {
-			String roleKey = st.nextToken().trim();
-			Role r = APILocator.getRoleAPI().loadRoleByKey(roleKey);
-			if(r==null){
-				continue;
 
-			}
-			if (!APILocator.getRoleAPI().doesUserHaveRole(u, r)) {
-				APILocator.getRoleAPI().addRoleToUser(r, u);
-			}
-		}
-	}
-
-	private User createUser(JSONObject json, User systemUser) throws UnsupportedEncodingException, JSONException, DotDataException, DotSecurityException, ServletException {
-		String FIRST_NAME_PROP, LAST_NAME_PROP;
-
-		try {
-			FIRST_NAME_PROP = OAuthPropertyBundle.getProperty("Auth02Api_FIRST_NAME_PROP");
-			LAST_NAME_PROP = OAuthPropertyBundle.getProperty("Auth02Api_LAST_NAME_PROP");
-		} catch (Exception e1) {
-			throw new ServletException(e1);
-		}
-
-		User u;
-		String userId = UUIDGenerator.generateUuid();
-		String email = new String(json.getString("email").getBytes(), "UTF-8");
-		String lastName = new String(json.getString(FIRST_NAME_PROP).getBytes(), "UTF-8");
-		String firstName = new String(json.getString(LAST_NAME_PROP).getBytes(), "UTF-8");
-
-		u = APILocator.getUserAPI().createUser(userId, email);
-
-		u.setFirstName(firstName);
-		u.setLastName(lastName);
-		u.setActive(true);
-
-		u.setCreateDate(new Date());
-		u.setPassword(PublicEncryptionFactory.digestString(UUIDGenerator.generateUuid() + "/" + UUIDGenerator.generateUuid()));
-		u.setPasswordEncrypted(true);
-
-		APILocator.getUserAPI().save(u, systemUser, false);
-		return u;
-	}
-
+	/**
+	 * Redirects the user to Auth0 in order to get an access token.
+	 */
 	private void redirectToAuth0ForAuthentication(HttpServletRequest request, HttpServletResponse response, OAuthService service) {
 		String retUrl = (String) request.getAttribute("javax.servlet.forward.request_uri");
 

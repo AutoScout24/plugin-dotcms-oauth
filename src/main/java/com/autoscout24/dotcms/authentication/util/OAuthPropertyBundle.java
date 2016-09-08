@@ -10,7 +10,7 @@
  * ***************************************************************************** 
  */
 
-package com.dotcms.osgi.oauth.util;
+package com.autoscout24.dotcms.authentication.util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
