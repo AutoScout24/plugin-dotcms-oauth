@@ -267,7 +267,7 @@ public class OAuth2Servlet extends HttpServlet {
 		service.signRequest(accessToken, userResourceRequest);
 
 		String response = userResourceRequest.send().getBody();
-		return new JSONTool().generate(response);
+		return (JSONObject) new JSONTool().generate(response);
 	}
 
 
