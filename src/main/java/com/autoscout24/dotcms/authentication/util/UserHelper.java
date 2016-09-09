@@ -16,8 +16,23 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 public class UserHelper {
+    // TODO: Change to AS24-AP-DotCMS-Backend-Users or something similar as soon as groups are mapped correctly
+    private static String ADMIN_GROUP_NAME = "AS24-Azure-ThatsClassified-Team";
+    private static List<String> KNOWN_CMS_GROUPS = new ArrayList<String>() {{
+        add(ADMIN_GROUP_NAME);
+        add("AS24-SOME-GROUP");
+    }};
+
+    public static boolean containsAdminGroup(List<String> groups) {
+        return groups.contains(ADMIN_GROUP_NAME);
+    }
+
+    public static boolean containsAnyCMSGroup(List<String> groups) {
+        return groups.stream().filter(KNOWN_CMS_GROUPS::contains).count() > 0;
+    }
+
     private static HashMap<String, String[]> GroupMapping =  new HashMap<String, String[]>() {{
-        put("AS24-Azure-ThatsClassified-Team", new String[] {"CMS Administrator", "Login As"});
+        put(ADMIN_GROUP_NAME, new String[] {"CMS Administrator", "Login As"});
     }};
 
     public static void updateUserRoles(User u, List<String> groups) throws DotDataException {

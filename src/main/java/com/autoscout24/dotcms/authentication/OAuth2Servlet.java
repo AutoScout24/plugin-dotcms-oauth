@@ -26,6 +26,7 @@ import com.autoscout24.dotcms.authentication.util.UserHelper;
 import com.dotcms.repackage.javax.xml.bind.DatatypeConverter;
 import com.dotcms.repackage.org.apache.commons.httpclient.HttpStatus;
 import com.dotmarketing.beans.Host;
+import com.dotmarketing.exception.DotRuntimeException;
 import com.dotmarketing.exception.DotSecurityException;
 import com.dotmarketing.util.json.JSONException;
 import org.scribe.builder.ServiceBuilder;
@@ -149,12 +150,16 @@ public class OAuth2Servlet extends HttpServlet {
         }
     }
 
+    private Host getDefaultHost() throws DotDataException, DotSecurityException {
+		return APILocator.getHostAPI().findDefaultHost(APILocator.getUserAPI().getSystemUser(), false);
+	}
+
 	/**
 	 * Factory method for creating and configuring a Scribe OAuthService.
 	 */
     private OAuthService createOAuthService(String CALLBACK_HOST, String state) throws ServletException, DotDataException, DotSecurityException {
 		String apiKey, apiSecret;
-		Host host = APILocator.getHostAPI().findDefaultHost(APILocator.getUserAPI().getSystemUser(), false);
+		Host host = getDefaultHost();
 
 		try {
             apiKey =  host.getStringProperty("auth0ApiKey");
@@ -197,18 +202,39 @@ public class OAuth2Servlet extends HttpServlet {
 	 * This method gets the user from the remote service and either creates them
 	 * in Dotcms and/or updates an existing user.
 	 */
-	private void doCallback(HttpServletRequest request, HttpServletResponse response, OAuthService service) throws DotDataException, JSONException, IOException {
+	private void doCallback(HttpServletRequest request, HttpServletResponse response, OAuthService service) throws DotDataException, JSONException, IOException, DotSecurityException {
 
 		JSONObject userResourceJson = getUserResourceFromAuth0(service, request.getParameter("code"));
+		List<String> groups = new ArrayList<String>();
 
-		User systemUser = APILocator.getUserAPI().getSystemUser();
-		User userLoggingIn = null;
-		try {
-			userLoggingIn = APILocator.getUserAPI().loadByUserByEmail(userResourceJson.getString("email"), systemUser, false);
+        for(int i=0; i < userResourceJson.getJSONArray("groups").size();i++) {
+            groups.add(userResourceJson.getJSONArray("groups").getString(i));
+        }
 
-		} catch (Exception e) {
-			Logger.warn(this, "No matching user, creating");
-		}
+        boolean loginAsAdminOnly = true;
+        try {
+            loginAsAdminOnly = getDefaultHost().getBoolProperty("auth0LoginAsAdminOnly");
+        } catch (DotRuntimeException e) {
+            Logger.error(this, "Failed to retrieve host variable auth0LoginAsAdminOnly: " + e.getMessage(), e);
+        }
+
+        boolean isUserAllowedToLogin = UserHelper.containsAdminGroup(groups) || (!loginAsAdminOnly && UserHelper.containsAnyCMSGroup(groups));
+
+        if(!isUserAllowedToLogin) {
+            response.reset();
+            response.sendError(HttpStatus.SC_FORBIDDEN, "You don't have the permission to log into dotCMS! " +
+                    "Please contact CorpIT, if you feel this is wrong.");
+            return;
+        }
+
+        User systemUser = APILocator.getUserAPI().getSystemUser();
+        User userLoggingIn = null;
+        try {
+            userLoggingIn = APILocator.getUserAPI().loadByUserByEmail(userResourceJson.getString("email"), systemUser, false);
+        } catch (Exception e) {
+            Logger.info(this, "No matching user, creating");
+        }
+
 		if (userLoggingIn == null) {
 			try {
 				userLoggingIn = UserHelper.createUser(userResourceJson);
@@ -219,26 +245,14 @@ public class OAuth2Servlet extends HttpServlet {
 		}
 
 		if (userLoggingIn.isActive()) {
-			List<String> groups = new ArrayList<String>();
-
-			for(int i=0; i < userResourceJson.getJSONArray("groups").size();i++) {
-				groups.add(userResourceJson.getJSONArray("groups").getString(i));
-			}
-
-			// TODO: Change to AS24-AP-DotCMS-Backend-Users or something similar as soon as groups are mapped correctly
-			if(groups.contains("AS24-Azure-ThatsClassified-Team")) {
-				UserHelper.updateUserRoles(userLoggingIn, groups);
-
-				LoginFactory.doCookieLogin(PublicEncryptionFactory.encryptString(userLoggingIn.getUserId()), request, response);
-
-				PrincipalThreadLocal.setName(userLoggingIn.getUserId());
-				request.getSession().setAttribute(WebKeys.USER_ID, userLoggingIn.getUserId());
-			} else {
-				response.reset();
-				response.sendError(HttpStatus.SC_FORBIDDEN, "You don't have the permission to log into dotCMS! " +
-					"Please contact CorpIT, if you feel this is wrong.");
-			}
-		}
+            UserHelper.updateUserRoles(userLoggingIn, groups);
+    		LoginFactory.doCookieLogin(PublicEncryptionFactory.encryptString(userLoggingIn.getUserId()), request, response);
+    		PrincipalThreadLocal.setName(userLoggingIn.getUserId());
+	    	request.getSession().setAttribute(WebKeys.USER_ID, userLoggingIn.getUserId());
+		} else {
+            response.reset();
+            response.sendError(HttpStatus.SC_FORBIDDEN, "Your account is inactive. Login not possible! ");
+        }
 	}
 
 	/**

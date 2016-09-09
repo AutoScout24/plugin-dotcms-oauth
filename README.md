@@ -26,7 +26,7 @@ the plugin will be built under ./build/lib/plugin-dotcms-oauth-release-0.1.jar
 In order to make the plugin work correctly, you need to configure the Auth0 API key and secret:
 * In the Admin UI, got to Content Types -> Content Type
 * Open the host content type
-* Add two text fields "auth0ApiKey" and "auth0ApiSecret" (both required)
+* Add two text fields "auth0ApiKey" and "auth0ApiSecret" and a select field "auth0LoginAsAdminOnly"
 * Open default site in System -> Sites
 * Configure the Auth0 connection correctly
 
