@@ -26,7 +26,7 @@ public class Auth02Example
                                   .callback("http://localhost:8080/app/oauth2/callback")
                                   .build();
     String state = "secret" + new Random().nextInt(999_999);
-    ((Auth02Api)service.getApi()).configure("jostick.eu.auth0.com", "google-oauth2", state);
+    ((Auth02Api)service.getApi()).configure(state);
     Scanner in = new Scanner(System.in);
 
     System.out.println("=== Auth02's OAuth Workflow ===");

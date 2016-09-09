@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 
-import com.autoscout24.dotcms.authentication.util.OAuthPropertyBundle;
 import com.dotcms.repackage.org.apache.felix.http.api.ExtHttpService;
 import com.dotcms.repackage.org.apache.logging.log4j.core.LoggerContext;
 import com.dotcms.repackage.org.osgi.framework.BundleContext;
@@ -50,9 +49,8 @@ public class Activator extends GenericBundleActivator {
 		// Initializing services...
 		initializeServices(context);
 
-		String useFor = OAuthPropertyBundle.getProperty("USE_OAUTH_FOR","").toLowerCase();
-		boolean frontEnd = useFor.contains ("frontend");
-		boolean backEnd = useFor.contains ("backend");
+		boolean frontEnd = false;
+		boolean backEnd = true;
 
 		ServiceReference<ExtHttpService> sRef = (ServiceReference<ExtHttpService>) context.getServiceReference(ExtHttpService.class.getName());
         if ( sRef != null ) {
@@ -76,20 +74,28 @@ public class Activator extends GenericBundleActivator {
 		
 		
         //Create Conditions for this rule
-        Condition condition1 = new Condition();
+        Condition conditionNativeParamIstNotSet = new Condition();
 
-		condition1 = new Condition();
-        condition1.setName( "native" );
-        condition1.setType("parameter");
-        condition1.setOperator("notequal");
-        condition1.setValue( "^.+$" );
+		conditionNativeParamIstNotSet = new Condition();
+        conditionNativeParamIstNotSet.setName( "native" );
+        conditionNativeParamIstNotSet.setType("parameter");
+        conditionNativeParamIstNotSet.setOperator("notequal");
+        conditionNativeParamIstNotSet.setValue( "^.+$" );
         
         //Create another Condition for this rule
-        Condition condition2 = new Condition();
-        condition2.setName( "my_account_r_m" );
-        condition2.setType("parameter");
-        condition2.setOperator("notequal");
-        condition2.setValue( "^.+$" );
+        Condition conditionRememberMeParamNotSet = new Condition();
+        conditionRememberMeParamNotSet.setName( "my_account_r_m" );
+        conditionRememberMeParamNotSet.setType("parameter");
+        conditionRememberMeParamNotSet.setOperator("notequal");
+        conditionRememberMeParamNotSet.setValue( "^.+$" );
+
+		//Create another Condition for this rule
+		Condition conditionNativeLoginCookieIsNotSet = new Condition();
+		conditionNativeLoginCookieIsNotSet.setName("native_login");
+		conditionNativeLoginCookieIsNotSet.setType("cookie");
+		conditionNativeLoginCookieIsNotSet.setOperator("notequal");
+		conditionNativeLoginCookieIsNotSet.setValue( "^.+$" );
+
 
         rules = new ArrayList<Rule>();
         if(frontEnd){
@@ -97,8 +103,10 @@ public class Activator extends GenericBundleActivator {
 			rule.setName("oauth-rule" + rules.size());
 			rule.setFrom("^/dotCMS/login.*$");
 			rule.setTo("/app" + OAUTH_URL);
-			rule.addCondition(condition1);
-			rule.addCondition(condition2);
+			rule.addCondition(conditionNativeParamIstNotSet);
+			rule.addCondition(conditionRememberMeParamNotSet);
+			rule.addCondition(conditionNativeLoginCookieIsNotSet);
+
 			addRewriteRule(rule);
 			rules.add(rule);
         }
@@ -109,44 +117,43 @@ public class Activator extends GenericBundleActivator {
 			rule.setName("oauth-rule" + rules.size());
 			rule.setFrom("^/html/portal/login.*$");
 			rule.setTo("/app" + OAUTH_URL + "?referrer=/c/portal/layout");
-			rule.addCondition(condition1);
-			rule.addCondition(condition2);
+			rule.addCondition(conditionNativeParamIstNotSet);
+			rule.addCondition(conditionRememberMeParamNotSet);
+			rule.addCondition(conditionNativeLoginCookieIsNotSet);
 			addRewriteRule(rule);
 			rules.add(rule);
-			
 			
 			rule = new NormalRule();
 			rule.setName("oauth-rule" + rules.size());
 			rule.setFrom("^/c/public/login.*$");
 			rule.setTo("/app" + OAUTH_URL + "?referrer=/c/portal/layout");
-			rule.addCondition(condition1);
-			rule.addCondition(condition2);
+			rule.addCondition(conditionNativeParamIstNotSet);
+			rule.addCondition(conditionRememberMeParamNotSet);
+			rule.addCondition(conditionNativeLoginCookieIsNotSet);
 			addRewriteRule(rule);
 			rules.add(rule);
-			
-			
+
 			rule = new NormalRule();
 			rule.setName("oauth-rule" + rules.size());
 			rule.setFrom("^/c/portal_public/login.*$");
 			rule.setTo("/app" + OAUTH_URL + "?referrer=/c/portal/layout");
-			rule.addCondition(condition1);
-			rule.addCondition(condition2);
+			rule.addCondition(conditionNativeParamIstNotSet);
+			rule.addCondition(conditionRememberMeParamNotSet);
+			rule.addCondition(conditionNativeLoginCookieIsNotSet);
 			addRewriteRule(rule);
 			rules.add(rule);
-			
-			
-			
 			
 			rule = new NormalRule();
 			rule.setName("oauth-rule" + rules.size());
 			rule.setFrom("^/c/portal/logout.*$");
 			rule.setTo("/c/portal/logout?referer=/");
-			rule.addCondition(condition1);
-			rule.addCondition(condition2);
+			rule.addCondition(conditionNativeParamIstNotSet);
+			rule.addCondition(conditionRememberMeParamNotSet);
+			rule.addCondition(conditionNativeLoginCookieIsNotSet);
 			addRewriteRule(rule);
 			rules.add(rule);
         }
-		
+
 		Logger.info(this.getClass(), "We now have " + DotUrlRewriteFilter.getUrlRewriteFilter().getRules().size() + " rules");
 
 	}

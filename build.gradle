@@ -7,7 +7,6 @@ apply plugin: 'propdeps-idea'
 sourceCompatibility = '1.8'
 version = '0.1'
 
-
 repositories {
 	maven {
         url "http://repo.dotcms.com/artifactory/libs-release"
@@ -36,22 +35,11 @@ jar {
         symbolicName = 'com.dotcms.osgi.oauth'
         instruction '-includeresource', 'libs'
         instruction 'Bundle-Vendor', 'dotcms'
-        instruction 'Export-Package', 'com.dotcms.osgi.oauth.*'
-
         instruction 'Bundle-Description', 'OAuth SSO with Auth0'
         instruction 'Bundle-DocURL', 'http://dotcms.com'
         instruction 'Bundle-Activator', 'com.autoscout24.dotcms.authentication.Activator'
         instruction 'DynamicImport-Package', '*'
         instruction 'Import-Package', 'org.scribe.builder.api.*;version=0,org.scribe.builder.*;version=0,com.autoscout24.dotcms.authentication.builder.api.*;version=0,com.autoscout24.dotcms.authentication.builder.*;version=0,!org.apache.commons.codec.binary.*,*;version=0'
-    }
-}
-
-processResources {
-    filesMatching("**/oauth2.properties") {
-        expand([
-                AUTH0_API_KEY: auth0ApiKey,
-                AUTH0_API_SECRET: auth0ApiSecret
-        ])
     }
 }
 

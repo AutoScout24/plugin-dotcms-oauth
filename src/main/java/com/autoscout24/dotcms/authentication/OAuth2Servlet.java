@@ -25,6 +25,8 @@ import com.autoscout24.dotcms.authentication.api.Auth02Api;
 import com.autoscout24.dotcms.authentication.util.UserHelper;
 import com.dotcms.repackage.javax.xml.bind.DatatypeConverter;
 import com.dotcms.repackage.org.apache.commons.httpclient.HttpStatus;
+import com.dotmarketing.beans.Host;
+import com.dotmarketing.exception.DotSecurityException;
 import com.dotmarketing.util.json.JSONException;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
@@ -33,7 +35,6 @@ import org.scribe.model.Verb;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
-import com.autoscout24.dotcms.authentication.util.OAuthPropertyBundle;
 import com.dotmarketing.business.APILocator;
 import com.dotmarketing.cms.factories.PublicEncryptionFactory;
 import com.dotmarketing.cms.login.factories.LoginFactory;
@@ -56,8 +57,6 @@ public class OAuth2Servlet extends HttpServlet {
 
 	public OAuth2Servlet() {
 	}
-
-	private static String CALLBACK_URL;
 
 	private String getState(String sessionId)
 	{
@@ -94,12 +93,18 @@ public class OAuth2Servlet extends HttpServlet {
 		}
 
 		String state = getState(session.getId());
-		OAuthService service = createOAuthService(callbackHost, state);
 
-		if (path.contains(CALLBACK_URL)) {
-            processAuth0Callback(response, request, session, callbackHost, state, service);
-        } else {
-			redirectToAuth0ForAuthentication(request, response, service);
+		try {
+			OAuthService service = createOAuthService(callbackHost, state);
+
+			if (path.contains(Auth02Api.CALLBACK_URL)) {
+				processAuth0Callback(response, request, session, callbackHost, state, service);
+			} else {
+				redirectToAuth0ForAuthentication(request, response, service);
+			}
+		} catch (Exception e) {
+			res.reset();
+			((HttpServletResponse) res).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
 		}
 
 	}
@@ -147,16 +152,13 @@ public class OAuth2Servlet extends HttpServlet {
 	/**
 	 * Factory method for creating and configuring a Scribe OAuthService.
 	 */
-    private OAuthService createOAuthService(String CALLBACK_HOST, String state) throws ServletException {
-		String apiKey, apiSecret, scopes, oauthHostname;
-        String auth0Connection;
+    private OAuthService createOAuthService(String CALLBACK_HOST, String state) throws ServletException, DotDataException, DotSecurityException {
+		String apiKey, apiSecret;
+		Host host = APILocator.getHostAPI().findDefaultHost(APILocator.getUserAPI().getSystemUser(), false);
 
 		try {
-            apiKey = OAuthPropertyBundle.getProperty("Auth02Api_API_KEY");
-			apiSecret = OAuthPropertyBundle.getProperty("Auth02Api_API_SECRET");
-			scopes = OAuthPropertyBundle.getProperty("Auth02Api_SCOPE");
-			oauthHostname = OAuthPropertyBundle.getProperty("Auth02Api_HOSTNAME");
-			auth0Connection = OAuthPropertyBundle.getProperty("Auth02Api_CONNECTION");
+            apiKey =  host.getStringProperty("auth0ApiKey");
+			apiSecret = host.getStringProperty("auth0ApiSecret");
 		} catch (Exception e1) {
 			throw new ServletException(e1);
 		}
@@ -165,11 +167,11 @@ public class OAuth2Servlet extends HttpServlet {
 				.provider(Auth02Api.class)
 				.apiKey(apiKey)
 				.apiSecret(apiSecret)
-				.scope(scopes)
-				.callback(CALLBACK_HOST + CALLBACK_URL)
+				.scope(Auth02Api.SCOPE)
+				.callback(CALLBACK_HOST + Auth02Api.CALLBACK_URL)
 				.build();
 
-		((Auth02Api)service.getApi()).configure(oauthHostname, auth0Connection, state);
+		((Auth02Api)service.getApi()).configure(state);
 		return service;
 	}
 
@@ -191,16 +193,11 @@ public class OAuth2Servlet extends HttpServlet {
 		return user;
 	}
 
-	@Override
-	public void init() throws ServletException {
-		CALLBACK_URL = OAuthPropertyBundle.getProperty("CALLBACK_URL");
-	}
-
 	/**
 	 * This method gets the user from the remote service and either creates them
 	 * in Dotcms and/or updates an existing user.
 	 */
-	private void doCallback(HttpServletRequest request, HttpServletResponse response, OAuthService service) throws DotDataException, JSONException {
+	private void doCallback(HttpServletRequest request, HttpServletResponse response, OAuthService service) throws DotDataException, JSONException, IOException {
 
 		JSONObject userResourceJson = getUserResourceFromAuth0(service, request.getParameter("code"));
 
@@ -236,6 +233,10 @@ public class OAuth2Servlet extends HttpServlet {
 
 				PrincipalThreadLocal.setName(userLoggingIn.getUserId());
 				request.getSession().setAttribute(WebKeys.USER_ID, userLoggingIn.getUserId());
+			} else {
+				response.reset();
+				response.sendError(HttpStatus.SC_FORBIDDEN, "You don't have the permission to log into dotCMS! " +
+					"Please contact CorpIT, if you feel this is wrong.");
 			}
 		}
 	}

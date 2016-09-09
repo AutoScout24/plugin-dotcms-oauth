@@ -17,7 +17,7 @@ import java.util.*;
 
 public class UserHelper {
     private static HashMap<String, String[]> GroupMapping =  new HashMap<String, String[]>() {{
-        put("AS24-Azure-ThatsClassified-Team", new String[] {"CMS Administrator"});
+        put("AS24-Azure-ThatsClassified-Team", new String[] {"CMS Administrator", "Login As"});
     }};
 
     public static void updateUserRoles(User u, List<String> groups) throws DotDataException {

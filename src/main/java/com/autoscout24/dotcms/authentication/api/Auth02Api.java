@@ -11,10 +11,12 @@ import org.scribe.utils.Preconditions;
 
 public class Auth02Api extends DefaultApi20 {
 
+    public static final String CALLBACK_URL= "/app/oauth2/callback";
+    public static final String SCOPE="openid email given_name family_name groups";
+    public static final String HOSTNAME = "scout24.eu.auth0.com";
+    public static final String CONNECTION= "scout24-com";
     public static final String USER_RESOURCE_URL = "https://scout24.eu.auth0.com/userinfo";
 
-    private String hostname;
-    private String connection;
     private String state;
 
     /**
@@ -23,10 +25,8 @@ public class Auth02Api extends DefaultApi20 {
      * Has to be called before the API is used. Sidesteps OAuthConfig since Auth0 needs extra configuration that
      * cannot be set in OAuthConfig.
      */
-    public void configure(String hostname, String connection, String state)
+    public void configure(String state)
     {
-        this.hostname = hostname;
-        this.connection = connection;
         this.state = state;
     }
 
@@ -41,7 +41,7 @@ public class Auth02Api extends DefaultApi20 {
     /* {@inheritDoc} */
     public String getAccessTokenEndpoint()
     {
-        return "https://" + this.hostname + "/oauth/token";
+        return "https://" + HOSTNAME + "/oauth/token";
     }
 
     @Override
@@ -49,7 +49,7 @@ public class Auth02Api extends DefaultApi20 {
     public String getAuthorizationUrl(OAuthConfig config)
     {
         Preconditions.checkValidUrl(config.getCallback(), "Must provide a valid url as callback.");
-        return String.format(authorizationUrl(), this.hostname, config.getApiKey(), OAuthEncoder.encode(config.getCallback()), this.state, this.connection, OAuthEncoder.encode(config.getScope()));
+        return String.format(authorizationUrl(), HOSTNAME, config.getApiKey(), OAuthEncoder.encode(config.getCallback()), this.state, CONNECTION, OAuthEncoder.encode(config.getScope()));
     }
 
     @Override
