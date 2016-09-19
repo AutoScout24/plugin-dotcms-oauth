@@ -168,6 +168,10 @@ public class OAuth2Servlet extends HttpServlet {
 			throw new ServletException(e1);
 		}
 
+		if(apiKey == null || apiSecret == null) {
+			Logger.error(this, "Failed to load api key and secret for Auth0");
+		}
+
 		OAuthService service = new ServiceBuilder()
 				.provider(Auth02Api.class)
 				.apiKey(apiKey)
