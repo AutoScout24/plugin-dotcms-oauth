@@ -81,9 +81,6 @@ def nexusUsername = "deploy"
 def nexusPassword = System.getenv("GO_NEXUS_DEPLOYMENT_PASSWORD")
 
 uploadArchives {
-    println "name" + nexusUsername
-    println "pass" + nexusPassword
-
     repositories {
         maven {
             credentials {
