@@ -77,12 +77,15 @@ publishing {
     }
 }
 
+def nexusUsername = "deploy"
+def nexusPassword = System.getenv("GO_NEXUS_DEPLOYMENT_PASSWORD")
+
 uploadArchives {
     repositories {
         maven {
             credentials {
-                username "deploy"
-                password System.getenv("GO_NEXUS_DEPLOYMENT_PASSWORD")
+                username nexusUsername
+                password nexusPassword
             }
             url "https://nexus.tools.autoscout24.com/nexus/content/repositories/releases"
         }
