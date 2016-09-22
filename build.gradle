@@ -3,6 +3,7 @@ apply plugin: 'eclipse'
 apply plugin: 'propdeps'
 apply plugin: 'propdeps-maven'
 apply plugin: 'propdeps-idea'
+apply plugin: 'maven-publish'
 
 sourceCompatibility = '1.8'
 version = '0.1'
@@ -66,4 +67,24 @@ task release(dependsOn: ['osgijar']) << {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.9'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            jar
+        }
+    }
+}
+
+uploadArchives {
+    repositories {
+        maven {
+            credentials {
+                username "deploy"
+                password System.getenv("GO_NEXUS_DEPLOYMENT_PASSWORD")
+            }
+            url "https://nexus.tools.autoscout24.com/nexus/content/repositories/releases"
+        }
+    }
 }
