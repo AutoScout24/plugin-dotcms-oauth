@@ -82,12 +82,13 @@ def nexusPassword = System.getenv("GO_NEXUS_DEPLOYMENT_PASSWORD")
 
 uploadArchives {
     repositories {
-        maven {
-            credentials {
-                username nexusUsername
-                password nexusPassword
+        mavenDeployer {
+            repository(url: "https://nexus.tools.autoscout24.com/nexus/content/repositories/releases") {
+                authentication(userName: nexusUsername, password: nexusPassword)
             }
-            url "https://nexus.tools.autoscout24.com/nexus/content/repositories/releases"
+            pom.groupId = "com.autoscout24"
+            pom.artifactId = project.name
+            pom.version = project.version
         }
     }
 }
