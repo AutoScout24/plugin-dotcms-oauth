@@ -6,7 +6,7 @@ apply plugin: 'propdeps-idea'
 apply plugin: 'maven-publish'
 
 sourceCompatibility = '1.8'
-version = '0.' + (System.getenv("GO_PIPELINE_LABEL")  ?: '1')
+version = '0.1'
 
 repositories {
 	maven {
