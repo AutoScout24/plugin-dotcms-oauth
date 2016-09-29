@@ -18,9 +18,10 @@ import java.util.*;
 public class UserHelper {
     // TODO: Change to AS24-AP-DotCMS-Backend-Users or something similar as soon as groups are mapped correctly
     private static String ADMIN_GROUP_NAME = "AS24-Azure-ThatsClassified-Team";
+    private static String SEO_MANAGERS_GROUP_NAME = "AS24-AP-DotCMS-SEO-Managers";
     private static List<String> KNOWN_CMS_GROUPS = new ArrayList<String>() {{
         add(ADMIN_GROUP_NAME);
-        add("AS24-SOME-GROUP");
+        add(SEO_MANAGERS_GROUP_NAME);
     }};
 
     public static boolean containsAdminGroup(List<String> groups) {
@@ -33,6 +34,7 @@ public class UserHelper {
 
     private static HashMap<String, String[]> GroupMapping =  new HashMap<String, String[]>() {{
         put(ADMIN_GROUP_NAME, new String[] {"CMS Administrator", "Login As"});
+        put(SEO_MANAGERS_GROUP_NAME, new String[] {"SEO Manager"});
     }};
 
     public static void updateUserRoles(User u, List<String> groups) throws DotDataException {

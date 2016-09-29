@@ -74,13 +74,18 @@ public class Activator extends GenericBundleActivator {
 		
 		
         //Create Conditions for this rule
-        Condition conditionNativeParamIstNotSet = new Condition();
 
-		conditionNativeParamIstNotSet = new Condition();
-        conditionNativeParamIstNotSet.setName( "native" );
-        conditionNativeParamIstNotSet.setType("parameter");
-        conditionNativeParamIstNotSet.setOperator("notequal");
-        conditionNativeParamIstNotSet.setValue( "^.+$" );
+        // do not redirect login_as URL. Otherwise the functionality breaks
+        Condition conditionNotLoginAs = new Condition();
+		conditionNotLoginAs.setType("path-info");
+		conditionNotLoginAs.setOperator("notequal");
+		conditionNotLoginAs.setValue( "^/portal/login_as$" );
+
+		Condition conditionNativeParamIstNotSet = new Condition();
+		conditionNativeParamIstNotSet.setName( "native" );
+		conditionNativeParamIstNotSet.setType("parameter");
+		conditionNativeParamIstNotSet.setOperator("notequal");
+		conditionNativeParamIstNotSet.setValue( "^.+$" );
         
         //Create another Condition for this rule
         Condition conditionRememberMeParamNotSet = new Condition();
@@ -120,6 +125,7 @@ public class Activator extends GenericBundleActivator {
 			rule.addCondition(conditionNativeParamIstNotSet);
 			rule.addCondition(conditionRememberMeParamNotSet);
 			rule.addCondition(conditionNativeLoginCookieIsNotSet);
+			rule.addCondition(conditionNotLoginAs);
 			addRewriteRule(rule);
 			rules.add(rule);
 			
