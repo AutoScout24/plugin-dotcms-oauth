@@ -34,7 +34,7 @@ public class UserHelper {
 
     private static HashMap<String, String[]> GroupMapping =  new HashMap<String, String[]>() {{
         put(ADMIN_GROUP_NAME, new String[] {"CMS Administrator", "Login As"});
-        put(SEO_MANAGERS_GROUP_NAME, new String[] {"SEO Manager"});
+        put(SEO_MANAGERS_GROUP_NAME, new String[] {"seomanager"});
     }};
 
     public static void updateUserRoles(User u, List<String> groups) throws DotDataException {
@@ -81,12 +81,11 @@ public class UserHelper {
         User systemUser = APILocator.getUserAPI().getSystemUser();
 
         User u;
-        String userId = UUIDGenerator.generateUuid();
         String email = new String(json.getString("email").getBytes(), "UTF-8");
         String lastName = new String(json.getString("given_name").getBytes(), "UTF-8");
         String firstName = new String(json.getString("family_name").getBytes(), "UTF-8");
 
-        u = APILocator.getUserAPI().createUser(userId, email);
+        u = APILocator.getUserAPI().createUser(null, email);
 
         u.setFirstName(firstName);
         u.setLastName(lastName);
