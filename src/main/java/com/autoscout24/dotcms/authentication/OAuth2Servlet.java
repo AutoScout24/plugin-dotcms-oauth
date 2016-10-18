@@ -79,7 +79,8 @@ public class OAuth2Servlet extends HttpServlet {
 		HttpSession session = request.getSession(true);
 		String path = request.getRequestURI();
 
-		String callbackHost = "https://jigsaw.a.autoscout24.com/dotcmsauth";
+		String callbackHost = request.getScheme() + "://" + ((request.getServerPort() == 80 || request.getServerPort() == 443) ?
+						request.getServerName() : request.getServerName()+":"+request.getServerPort());
 
 		User user = getUserFromSession(request, session);
 
