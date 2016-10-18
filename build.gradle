@@ -69,26 +69,22 @@ task wrapper(type: Wrapper) {
     gradleVersion = '3.0'
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            release
-        }
-    }
-}
-
 def nexusUsername = "deploy"
 def nexusPassword = System.getenv("GO_NEXUS_DEPLOYMENT_PASSWORD")
 
-uploadArchives {
+publishing {
     repositories {
-        mavenDeployer {
-            repository(url: "https://nexus.tools.autoscout24.com/nexus/content/repositories/releases") {
-                authentication(userName: nexusUsername, password: nexusPassword)
+        maven {
+            credentials {
+                username nexusUsername
+                password nexusPassword
             }
-            pom.groupId = "com.autoscout24"
-            pom.artifactId = project.name
-            pom.version = project.version
+            url "https://nexus.tools.autoscout24.com/nexus/content/repositories/releases"
+        }
+    }
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
         }
     }
 }
