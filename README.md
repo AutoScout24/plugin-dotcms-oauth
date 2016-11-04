@@ -53,6 +53,9 @@ Backend native login:
 http://localhost:8080/html/portal/login.jsp?native=true 
 ````
 
+You can also set a cookie "native_login" to "true". This makes it much easier to reset your password, if the plugin
+should be broken.
+
 ## Known issues
 DotCMS do have their own user accounts needed for system administration and support:
 * Admin2 User (admin2@dotcms.com)

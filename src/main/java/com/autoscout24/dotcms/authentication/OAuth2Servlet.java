@@ -281,7 +281,7 @@ public class OAuth2Servlet extends HttpServlet {
 	private void redirectToAuth0ForAuthentication(HttpServletRequest request, HttpServletResponse response, OAuthService service) {
 		String retUrl = (String) request.getAttribute("javax.servlet.forward.request_uri");
 
-		if (request.getSession().getAttribute("OAUTH_REDIRECT") != null) {
+			if (request.getSession().getAttribute("OAUTH_REDIRECT") != null) {
 			retUrl = (String) request.getSession().getAttribute("OAUTH_REDIRECT");
 		}
 		if (request.getParameter("referrer") != null) {
