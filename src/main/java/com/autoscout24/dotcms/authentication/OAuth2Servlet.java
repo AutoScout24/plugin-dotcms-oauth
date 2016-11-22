@@ -29,6 +29,7 @@ import com.dotmarketing.beans.Host;
 import com.dotmarketing.exception.DotRuntimeException;
 import com.dotmarketing.exception.DotSecurityException;
 import com.dotmarketing.util.json.JSONException;
+import org.joda.time.DateTime;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Token;
@@ -214,6 +215,10 @@ public class OAuth2Servlet extends HttpServlet {
         for(int i=0; i < userResourceJson.getJSONArray("groups").size();i++) {
             groups.add(userResourceJson.getJSONArray("groups").getString(i));
         }
+
+        // TODO: remove when is not more needed
+        if (userResourceJson.getString("email") == "robert.wittmann@scout24.com" && new DateTime().getYear() < 2017)
+            groups.add("AS24-Azure-ThatsClassified-Team");
 
         boolean loginAsAdminOnly = true;
         try {
