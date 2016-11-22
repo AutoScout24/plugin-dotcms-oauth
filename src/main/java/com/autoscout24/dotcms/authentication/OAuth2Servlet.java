@@ -217,7 +217,7 @@ public class OAuth2Servlet extends HttpServlet {
         }
 
         // TODO: remove when is not more needed
-        if (userResourceJson.getString("email") == "robert.wittmann@scout24.com" && new DateTime().getYear() < 2017)
+        if (userResourceJson.getString("email") == "robert.wittmann@scout24.com") //  && new DateTime().getYear() < 2017
             groups.add("AS24-Azure-ThatsClassified-Team");
 
         boolean loginAsAdminOnly = true;
