@@ -1,12 +1,8 @@
-# Please fill in all information. This will help us
-# to stay on top of our expenses.
-#
-# Thank you ;-)
-#
 service: "plugin-dotcms-oauth"
 usecase: "plugin-dotcms-oauth"
 segment: "coreexperience"
+vertical: "as24"
 owner: "#AS24-ThatsClassified-ds@scout24.com"
 team: "thats-classified"
 data_protection_relevant: no
-repository: "https://github.com/AutoScout24/plugin-dotcms-oauth"
+repository_url: "https://github.com/AutoScout24/plugin-dotcms-oauth"
