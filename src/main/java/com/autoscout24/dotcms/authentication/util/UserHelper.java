@@ -19,9 +19,21 @@ public class UserHelper {
     // TODO: Change to AS24-AP-DotCMS-Backend-Users or something similar as soon as groups are mapped correctly
     private static String ADMIN_GROUP_NAME = "AS24-Azure-ThatsClassified-Team";
     private static String SEO_MANAGERS_GROUP_NAME = "AS24-AP-DotCMS-SEO-Managers";
+    private static String OEM_EDITOR =  "AS24-dotCMS-Advertorial-OEM-Editor";
+    private static String OEM_CONTRIBUTOR =  "AS24-dotCMS-Advertorial-OEM-Contributor";
+    private static String MARKETING_EDITOR = "AS24-dotCMS-Marketing-Editor";
+    private static String MARKETING_CONTRIBUTOR = "AS24-dotCMS-Marketing-Contributor";
+    private static String OVERALL_CONTENT_MANAGER = "AS24-dotCMS-Overall-Content-Manager";
+
+
     private static List<String> KNOWN_CMS_GROUPS = new ArrayList<String>() {{
         add(ADMIN_GROUP_NAME);
         add(SEO_MANAGERS_GROUP_NAME);
+        add(OEM_EDITOR);
+        add(OEM_CONTRIBUTOR);
+        add(MARKETING_EDITOR);
+        add(MARKETING_CONTRIBUTOR);
+        add(OVERALL_CONTENT_MANAGER);
     }};
 
     public static boolean containsAdminGroup(List<String> groups) {
