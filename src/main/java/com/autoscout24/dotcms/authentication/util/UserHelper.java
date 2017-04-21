@@ -10,7 +10,6 @@ import com.dotmarketing.util.UUIDGenerator;
 import com.dotmarketing.util.json.JSONException;
 import com.dotmarketing.util.json.JSONObject;
 import com.liferay.portal.model.User;
-
 import javax.servlet.ServletException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -47,11 +46,11 @@ public class UserHelper {
     private static HashMap<String, String[]> GroupMapping =  new HashMap<String, String[]>() {{
         put(ADMIN_GROUP_NAME, new String[] {"CMS Administrator", "Login As"});
         put(SEO_MANAGERS_GROUP_NAME, new String[] {"seomanager"});
-        put(OEM_EDITOR, new String[]{"Advertorial OEM Editor"});
-        put(OEM_CONTRIBUTOR, new String[]{"Advertorial OEM Contributor"});
-        put(MARKETING_EDITOR, new String[]{"Marketing Editor"});
-        put(MARKETING_CONTRIBUTOR, new String[]{"Marketing Contributor"});
-        put(OVERALL_CONTENT_MANAGER, new String[]{"Overall Content Manager"});
+        put(OEM_EDITOR, new String[]{"advertorialOEMEditor"});
+        put(OEM_CONTRIBUTOR, new String[]{"advertorialOEMContributor"});
+        put(MARKETING_EDITOR, new String[]{"marketingEditor"});
+        put(MARKETING_CONTRIBUTOR, new String[]{"marketingContributor"});
+        put(OVERALL_CONTENT_MANAGER, new String[]{"overallContentManager"});
     }};
 
     public static void updateUserRoles(User u, List<String> groups) throws DotDataException {
