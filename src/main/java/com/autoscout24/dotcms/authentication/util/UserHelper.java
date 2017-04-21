@@ -47,6 +47,11 @@ public class UserHelper {
     private static HashMap<String, String[]> GroupMapping =  new HashMap<String, String[]>() {{
         put(ADMIN_GROUP_NAME, new String[] {"CMS Administrator", "Login As"});
         put(SEO_MANAGERS_GROUP_NAME, new String[] {"seomanager"});
+        put(OEM_EDITOR, new String[]{"Advertorial OEM Editor"});
+        put(OEM_CONTRIBUTOR, new String[]{"Advertorial OEM Contributor"});
+        put(MARKETING_EDITOR, new String[]{"Marketing Editor"});
+        put(MARKETING_CONTRIBUTOR, new String[]{"Marketing Contributor"});
+        put(OVERALL_CONTENT_MANAGER, new String[]{"Overall Content Manager"});
     }};
 
     public static void updateUserRoles(User u, List<String> groups) throws DotDataException {
