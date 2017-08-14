@@ -16,7 +16,7 @@ import java.util.*;
 
 public class UserHelper {
     // TODO: Change to AS24-AP-DotCMS-Backend-Users or something similar as soon as groups are mapped correctly
-    private static String ADMIN_GROUP_NAME = "AS24-Azure-ThatsClassified-Team";
+    private static String ADMIN_GROUP_NAME = "AS24-AP-DotCMS-Administrators";
     private static String SEO_MANAGERS_GROUP_NAME = "AS24-AP-DotCMS-SEO-Managers";
     private static String OEM_EDITOR =  "AS24-dotCMS-Advertorial-OEM-Editor";
     private static String OEM_CONTRIBUTOR =  "AS24-dotCMS-Advertorial-OEM-Contributor";
