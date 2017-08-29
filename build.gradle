@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compile (group: 'com.dotcms', name: 'dotcms', version: '3.6.0'){
+    compile (group: 'com.dotcms', name: 'dotcms', version: '4.1.1'){
         transitive = true
     }
 	provided('javax.servlet:servlet-api:2.5')

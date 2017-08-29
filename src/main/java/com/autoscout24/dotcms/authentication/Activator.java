@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 
-import com.dotcms.repackage.org.apache.felix.http.api.ExtHttpService;
+import org.apache.felix.http.api.ExtHttpService;
 import com.dotcms.repackage.org.apache.logging.log4j.core.LoggerContext;
-import com.dotcms.repackage.org.osgi.framework.BundleContext;
-import com.dotcms.repackage.org.osgi.framework.ServiceReference;
-import com.dotcms.repackage.org.osgi.util.tracker.ServiceTracker;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.util.tracker.ServiceTracker;
 import com.dotcms.repackage.org.tuckey.web.filters.urlrewrite.Condition;
 import com.dotcms.repackage.org.tuckey.web.filters.urlrewrite.NormalRule;
 import com.dotcms.repackage.org.tuckey.web.filters.urlrewrite.Rule;
