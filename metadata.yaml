@@ -1,12 +1,17 @@
-service: "plugin-dotcms-oauth"
-usecase: "plugin-dotcms-oauth"
-segment: "coreexperience"
-vertical: "as24"
-owner: "#AS24-ThatsClassified-ds@scout24.com"
-team: "thats-classified"
-criticality: "bronze"
-confidentiality: "company-internal"
-integrity: "non-critical"
-availability: "non-critical"
-data_protection_relevant: no
-repository_url: "https://github.com/AutoScout24/plugin-dotcms-oauth"
+type: library
+id: plugin-dotcms-oauth
+name: plugin-dotcms-oauth
+vertical: as24
+owners:
+- '#AS24-acquisition-cxp-ds@scout24.com'
+availability: false
+integrity: false
+confidentiality: company-internal
+product: dotcms
+links:
+- type: repository
+  title: Git Repository
+  address: https://github.com/Scout24/plugin-dotcms-oauth
+- type: documentation
+  title: Readme
+  address: https://github.com/Scout24/plugin-dotcms-oauth/blob/master/README.md
